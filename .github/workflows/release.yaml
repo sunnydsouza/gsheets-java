@@ -8,8 +8,8 @@ on:
 env:
   GPG_PRIVATE_KEY: ${{ secrets.GPG_PRIVATE_KEY }}
   GPG_PASSPHRASE: ${{ secrets.GPG_PASSPHRASE }}
-  OSSRH_USERNAME: ${{ secrets.NEXUS_USERNAME }}
-  OSSRH_PASSWORD: ${{ secrets.NEXUS_PASSWORD }}
+  OSSRH_USERNAME: ${{ secrets.OSSRH_USERNAME }}
+  OSSRH_PASSWORD: ${{ secrets.OSSRH_PASSWORD }}
 
 jobs:
   build:

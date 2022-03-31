@@ -145,9 +145,9 @@ public class GRow {
     return rowColValMap.entrySet().stream().map(Map.Entry::getValue).collect(Collectors.toList());
   }
   /**
-   * Compare the current row with the given row
+   * Compare the current row with the expected row
    *
-   * @param o
+   * @param o The expected row to compare with
    * @return 0 if the two GRow objects are equal, else -1. log statements will highlight the
    *     unequal/different columns
    */
@@ -158,13 +158,13 @@ public class GRow {
     if (rowColValMap.size() != o.rowColValMap.size()) {
       result = -1;
       logger.error(
-          "FAILED MATCH.Column counts dont match. Expected:{} versus Actual:{}",
+          "FAILED MATCH.Column counts dont match. Actual:{} versus Expected:{}",
           rowColValMap.size(),
           o.rowColValMap.size());
       return result;
     } else {
       logger.debug(
-          "SUCCESS MATCH.Column counts match. Expected:{} versus Actual:{} ",
+          "SUCCESS MATCH.Column counts match. Actual:{} versus Expected:{} ",
           rowColValMap.size(),
           o.rowColValMap.size());
     }
@@ -173,7 +173,7 @@ public class GRow {
     if (rowNum != o.rowNum) {
       result = -1;
       logger.error(
-          "FAILED MATCH.Row numbers dont match. Expected:{} versus Actual:{}", rowNum, o.rowNum);
+          "FAILED MATCH.Row numbers dont match. Actual:{} versus Expected:{}", rowNum, o.rowNum);
     }
 
     // Compare all values with the same key
