@@ -1,0 +1,93 @@
+name: Test build on branch
+
+on:
+  push:
+    branches:
+      - develop
+      - feature/*
+      - fix/*
+
+jobs:
+  build:
+    if: "!contains(github.event.head_commit.message, 'skip ci')"
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [ ubuntu-latest, macos-latest, windows-latest ]
+        distribution: [ 'temurin' ]
+        java: [ '11' ]
+    steps:
+      - name: Check out Git repository
+        uses: actions/checkout@v3
+      - name: Build on Java ${{ matrix.Java }}
+        uses: actions/setup-java@v2
+        with:
+          java-version: ${{ matrix.java }}
+          distribution: ${{ matrix.distribution }}
+          server-id: github # Value of the distributionManagement/repository/id field of the pom.xml
+          settings-path: ${{ github.workspace }}
+      - name: Build Package
+        run: mvn -B package -DskipTests --file pom.xml
+  tests:
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [ ubuntu-latest ]
+        distribution: [ 'temurin' ]
+        java: [ '11' ]
+    needs:
+      - build
+    services:
+      mysql:
+        image: mysql:5.7
+        env:
+          MYSQL_ROOT_PASSWORD: password
+        ports:
+          - 32574:3306
+        options: --health-cmd="mysqladmin ping" --health-interval=10s --health-timeout=5s --health-retries=3
+    steps:
+      - name: Check out Git repository
+        uses: actions/checkout@v3
+      - name: Create credential.json file
+        id: create-json
+        uses: jsdaniell/create-json@1.1.2
+        with:
+          name: "./credentials/credentials.json"
+          json: ${{ secrets.GOOGLE_CREDENTIALS }}
+      - name: Build on Java ${{ matrix.Java }}
+        uses: actions/setup-java@v2
+        with:
+          java-version: ${{ matrix.java }}
+          distribution: ${{ matrix.distribution }}
+          server-id: github # Value of the distributionManagement/repository/id field of the pom.xml
+          settings-path: ${{ github.workspace }}
+      - name: Build Package
+        run: mvn -B package -DskipTests --file pom.xml
+      - name: Verify MySQL connection from host
+        run: |
+          mysql --host 127.0.0.1 --port 32574 -uroot -ppassword -e "SHOW DATABASES"
+          mysql --host 127.0.0.1 --port 32574 -e 'CREATE DATABASE sampledb;' -uroot -ppassword
+          mysql --host 127.0.0.1 --port 32574 -uroot -ppassword sampledb< configuration/sampletest.sql
+          mysql --host 127.0.0.1 --port 32574 sampledb -e "SELECT * FROM Expense;" -uroot -ppassword
+
+      - name: Test with Maven
+        run: mvn clean test
+#      - name: Test Report
+#        uses: dorny/test-reporter@v1
+#        if: success() || failure()
+#        with:
+#          name: Test Results
+#          path: ${{ github.workspace }}/target/surefire-reports/*.xml
+#          reporter: java-junit
+      - name: Delete the credential.json
+        run: rm ./credentials/credentials.json
+      - name: Publish Test Report
+        if: ${{ always() }}
+        uses: scacap/action-surefire-report@v1
+      - name: Upload target folder
+        uses: actions/upload-artifact@v2
+        with:
+          name: target
+          path: |
+            ${{ github.workspace }}/target
+            ${{ github.workspace }}/reports

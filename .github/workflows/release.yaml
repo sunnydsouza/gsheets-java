@@ -1,0 +1,135 @@
+name: Build, test and release package
+
+on:
+  push:
+    branches:
+      - main
+
+env:
+  GPG_PRIVATE_KEY: ${{ secrets.GPG_PRIVATE_KEY }}
+  GPG_PASSPHRASE: ${{ secrets.GPG_PASSPHRASE }}
+  OSSRH_USERNAME: ${{ secrets.NEXUS_USERNAME }}
+  OSSRH_PASSWORD: ${{ secrets.NEXUS_PASSWORD }}
+
+jobs:
+  build:
+    if: "!contains(github.event.head_commit.message, 'skip ci')"
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [ ubuntu-latest, macos-latest, windows-latest ]
+        distribution: [ 'temurin' ]
+        java: [ '11' ]
+    steps:
+      - name: Check out Git repository
+        uses: actions/checkout@v3
+        with:
+          ref: 'main'
+      - name: Build on Java ${{ matrix.Java }}
+        uses: actions/setup-java@v2
+        with:
+          java-version: ${{ matrix.java }}
+          distribution: ${{ matrix.distribution }}
+          server-id: github # Value of the distributionManagement/repository/id field of the pom.xml
+          settings-path: ${{ github.workspace }}
+      - name: Build Package
+        run: mvn -B package --file pom.xml
+  tests:
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [ ubuntu-latest, macos-latest, windows-latest ]
+        distribution: [ 'temurin' ]
+        java: [ '11' ]
+    needs:
+      - build
+    steps:
+      - name: Check out Git repository
+        uses: actions/checkout@v3
+        with:
+          ref: 'main'
+      - name: Build on Java ${{ matrix.Java }}
+        uses: actions/setup-java@v2
+        with:
+          java-version: ${{ matrix.java }}
+          distribution: ${{ matrix.distribution }}
+          server-id: github # Value of the distributionManagement/repository/id field of the pom.xml
+          settings-path: ${{ github.workspace }}
+      - name: Build Package
+        run: mvn -B package --file pom.xml
+      - name: Test with Maven
+        run: mvn clean test
+  build-semantic-release:
+    if: "!contains(github.event.head_commit.message, 'skip ci')"
+    needs:
+      - tests
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out Git repository
+        uses: actions/checkout@v3
+      - name: Install Java and Maven
+        uses: actions/setup-java@v2
+        with:
+          java-version: '11'
+          distribution: 'temurin'
+      - name: Restore local Maven repository
+        uses: actions/cache@v2
+        with:
+          path: ~/.m2/repository
+          key: ${{ runner.os }}-maven-${{ github.sha }}
+      - name: Setup Node.js and semantic-release plugins
+        uses: actions/setup-node@v1
+        with:
+          node-version: 16
+        env:
+          GITHUB_TOKEN: ${{ secrets.PERSONAL_GITHUB_TOKEN }}
+      - run: npm install -g semantic-release @semantic-release/changelog @semantic-release/commit-analyzer @semantic-release/exec semantic-release/git semantic-release/release-notes-generator
+      - name: Release
+        env:
+          GITHUB_TOKEN: ${{ secrets.PERSONAL_GITHUB_TOKEN }}
+        run: chmod +x ./prepare-release.sh && npx semantic-release
+  github-publish:
+    runs-on: ubuntu-latest
+    needs:
+      - build-semantic-release
+    steps:
+      - name: Check out Git repository
+        uses: actions/checkout@v3
+        with:
+          ref: 'main'
+      - name: Set up JDK 11 Temurin
+        uses: actions/setup-java@v2
+        with:
+          java-version: '11'
+          distribution: 'temurin'
+          server-id: github # Value of the distributionManagement/repository/id field of the pom.xml
+          settings-path: ${{ github.workspace }} # locat
+      - name: Build Package
+        run: mvn -B package --file pom.xml
+      - name: Publish to GitHub Packages Apache Maven
+        run: mvn deploy -s $GITHUB_WORKSPACE/settings.xml
+        env:
+          GITHUB_TOKEN: ${{ secrets.PERSONAL_GITHUB_TOKEN }}
+  maven-publish:
+    runs-on: ubuntu-latest
+    needs:
+      - build-semantic-release
+    steps:
+      - name: Check out Git repository
+        uses: actions/checkout@v3
+        with:
+          ref: 'main'
+      - name: Set up JDK 11 Temurin
+        uses: actions/setup-java@v2
+        with:
+          java-version: '11'
+          distribution: 'temurin'
+          server-id: ossrh # Value of the distributionManagement/repository/id field of the pom.xml
+          settings-path: ${{ github.workspace }} # location for the settings.xml file
+      - name: Publish to Maven Central
+        uses: samuelmeuli/action-maven-publish@v1
+        with:
+          gpg_private_key: ${{ env.GPG_PRIVATE_KEY }}
+          gpg_passphrase: ${{ env.GPG_PASSPHRASE }}
+          nexus_username: ${{ env.OSSRH_USERNAME }}
+          nexus_password: ${{ env.OSSRH_PASSWORD }}
