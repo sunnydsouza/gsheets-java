@@ -37,14 +37,6 @@ jobs:
         java: [ '11' ]
     needs:
       - build
-    services:
-      mysql:
-        image: mysql:5.7
-        env:
-          MYSQL_ROOT_PASSWORD: password
-        ports:
-          - 32574:3306
-        options: --health-cmd="mysqladmin ping" --health-interval=10s --health-timeout=5s --health-retries=3
     steps:
       - name: Check out Git repository
         uses: actions/checkout@v3
@@ -63,12 +55,6 @@ jobs:
           settings-path: ${{ github.workspace }}
       - name: Build Package
         run: mvn -B package -DskipTests --file pom.xml
-      - name: Verify MySQL connection from host
-        run: |
-          mysql --host 127.0.0.1 --port 32574 -uroot -ppassword -e "SHOW DATABASES"
-          mysql --host 127.0.0.1 --port 32574 -e 'CREATE DATABASE sampledb;' -uroot -ppassword
-          mysql --host 127.0.0.1 --port 32574 -uroot -ppassword sampledb< configuration/sampletest.sql
-          mysql --host 127.0.0.1 --port 32574 sampledb -e "SELECT * FROM Expense;" -uroot -ppassword
 
       - name: Test with Maven
         run: mvn clean test
