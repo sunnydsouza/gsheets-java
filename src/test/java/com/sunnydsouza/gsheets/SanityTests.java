@@ -10,7 +10,6 @@ import com.sunnydsouza.gsheets.api.GRow;
 import com.sunnydsouza.gsheets.api.GsheetsApi;
 import com.sunnydsouza.gsheets.utils.PropertyFileReader;
 import org.junit.jupiter.api.*;
-import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -23,7 +22,6 @@ import java.util.Map;
 import java.util.stream.Collectors;
 
 import static org.junit.jupiter.api.Assertions.*;
-
 
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
 public class SanityTests extends SanityTestExpectedResults {
@@ -49,11 +47,12 @@ public class SanityTests extends SanityTestExpectedResults {
                 "Filters!A:F",
                 new GColumnFilters()
                     .onCol("RecordedTimestamp")
-                    .conditions(GCondition.equals("01/03/2022")));
+                    .conditions(GCondition.equals("09/01/2022")));
 
     logger.debug("filteredResult:{}", filteredResult);
 
-    filteredResult.forEach(f -> logger.debug(String.valueOf(f.getRowNo()))); // for debugging purposes
+    filteredResult.forEach(
+        f -> logger.debug(String.valueOf(f.getRowNo()))); // for debugging purposes
 
     // Compare the filteredResult with expectedResult
     if (filteredResult.size() != expResFilterRowSingleColumnGSheets.size()) {
@@ -82,9 +81,9 @@ public class SanityTests extends SanityTestExpectedResults {
                 "Filters!A:F",
                 new GColumnFilters()
                     .onCol("RecordedTimestamp")
-                    .conditions(GCondition.equals("01/03/2022").or(GCondition.equals("01/01/2022")))
+                    .conditions(GCondition.equals("09/01/2022").or(GCondition.equals("17/01/2022")))
                     .onCol("ExpenseCategory")
-                    .conditions(GCondition.equals("Bills")));
+                    .conditions(GCondition.equals("Subscriptions")));
     logger.debug("filteredResult:{}", filteredResult);
 
     filteredResult.stream()
@@ -125,21 +124,7 @@ public class SanityTests extends SanityTestExpectedResults {
     filteredResult.stream()
         .forEach(f -> logger.debug(String.valueOf(f.getRowNo()))); // for debugging purposes
 
-    // Compare the filteredResult with expectedResult
-    if (filteredResult.size() != expResFilterRowNoConditionsMatch.size()) {
-      fail(
-          "Expected size: "
-              + expResFilterRowNoConditionsMatch.size()
-              + " Actual size: "
-              + filteredResult.size());
-    }
-    boolean resultAssertion = true;
-    for (int i = 0; i < filteredResult.size(); i++) {
-      if (filteredResult.get(i).compareTo(expResFilterRowNoConditionsMatch.get(i)) != 0) {
-        resultAssertion = false;
-      }
-    }
-    assertTrue(resultAssertion, "Verify the filtered results shows 0 records");
+    assertTrue(filteredResult.isEmpty(), "Verify the filtered results shows 0 records");
   }
 
   /**
@@ -158,29 +143,16 @@ public class SanityTests extends SanityTestExpectedResults {
                 "Filters!A:F",
                 new GColumnFilters()
                     .onCol("RecordedTimestamp")
-                    .conditions(GCondition.equals("01/03/2022")))
+                    .conditions(GCondition.equals("09/01/2022").or(GCondition.equals("17/01/2022")))
+                    .onCol("ExpenseCategory")
+                    .conditions(GCondition.equals("Subscriptions")))
             .stream()
             .map(GRow::getRowNo)
             .collect(Collectors.toCollection(LinkedList::new));
     logger.debug("Rows returned for filtered conditions:{}", rowNos);
-  }
 
-  @Test
-  @Order(5)
-  public void filteredRowNoMultipleColumnsGSheets() throws GeneralSecurityException, IOException {
-
-    List<Integer> rowNos =
-        GsheetsApi.spreadsheet(PropertyFileReader.getPropValues(GSHEETS_ID))
-            .findRows(
-                "Filters!A:F",
-                new GColumnFilters()
-                    .onCol("RecordedTimestamp")
-                    .conditions(GCondition.equals("01/03/2022").or(GCondition.equals("06/02/2022")))
-                    .onCol("ExpenseCategory")
-                    .conditions(GCondition.equals("Booze")));
-    logger.debug("Rows returned for filtered conditions:{}", rowNos);
-    List<Integer> expRowNos = new LinkedList<>(List.of(63));
-    assertEquals(expRowNos, rowNos);
+    List<Integer> expRowNos = new LinkedList<>(List.of(14, 16, 18, 21));
+    assertEquals(expRowNos, rowNos, "Verify the filtered row numbers match");
   }
 
   /**
@@ -205,9 +177,9 @@ public class SanityTests extends SanityTestExpectedResults {
     List<Integer> expRowNos =
         new LinkedList<>(
             List.of(
-                103, 104, 105, 106, 107, 108, 109, 110, 111, 112, 113, 114, 115, 116, 117, 118, 119,
-                120, 121, 122, 123, 124, 125, 126, 127, 128, 129, 130, 131, 132, 133, 134, 135, 136,
-                137, 138, 139));
+                100, 101, 102, 103, 104, 105, 106, 107, 108, 109, 110, 111, 112, 113, 114, 115, 116,
+                117, 118, 119, 120, 121, 122, 123, 124, 125, 126, 127, 128, 129, 130, 131, 132, 133,
+                134, 135));
     assertEquals(expRowNos, rowNos);
   }
 

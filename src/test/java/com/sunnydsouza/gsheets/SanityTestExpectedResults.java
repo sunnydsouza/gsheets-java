@@ -14,74 +14,52 @@ public class SanityTestExpectedResults {
   List<GRow> expResFilterRowSingleColumnGSheets =
       new LinkedList<>(
           List.of(
-              GRow.newRow(98)
-                  .addCell("Month", "Mar")
+              GRow.newRow(13)
+                  .addCell("RecordedTimestamp", "09/01/2022")
+                  .addCell("Month", "Jan")
                   .addCell("Type", "Debit")
-                  .addCell("RecordedTimestamp", "01/03/2022")
                   .addCell("ExpenseCategory", "Shopping")
-                  .addCell("ExpenseSubCategory", "Amazon")
-                  .addCell("Expense", "216.00"),
-              GRow.newRow(99)
-                  .addCell("Month", "Mar")
+                  .addCell("ExpenseSubCategory", "Cred")
+                  .addCell("Expense", "113.00"),
+              GRow.newRow(14)
+                  .addCell("RecordedTimestamp", "09/01/2022")
+                  .addCell("Month", "Jan")
                   .addCell("Type", "Debit")
-                  .addCell("RecordedTimestamp", "01/03/2022")
-                  .addCell("ExpenseCategory", "Swiggy")
-                  .addCell("ExpenseSubCategory", "Irani Cafe")
-                  .addCell("Expense", "217.00"),
-              GRow.newRow(101)
-                  .addCell("Month", "Mar")
-                  .addCell("Type", "Debit")
-                  .addCell("RecordedTimestamp", "01/03/2022")
-                  .addCell("ExpenseCategory", "Bills")
-                  .addCell("ExpenseSubCategory", "Internet")
-                  .addCell("Expense", "219.00"),
-              GRow.newRow(102)
-                  .addCell("Month", "Mar")
-                  .addCell("Type", "Debit")
-                  .addCell("RecordedTimestamp", "01/03/2022")
-                  .addCell("ExpenseCategory", "Bills")
-                  .addCell("ExpenseSubCategory", "IdeaPostpaid")
-                  .addCell("Expense", "220.00")));
+                  .addCell("ExpenseCategory", "Subscriptions")
+                  .addCell("ExpenseSubCategory", "bbdaily")
+                  .addCell("Expense", "114.00")));
 
   List<GRow> expResFilterRowMultipleColumnsGSheets =
       new LinkedList<>(
           List.of(
-              GRow.newRow(2)
+              GRow.newRow(14)
+                  .addCell("RecordedTimestamp", "09/01/2022")
                   .addCell("Month", "Jan")
                   .addCell("Type", "Debit")
-                  .addCell("RecordedTimestamp", "01/01/2022")
-                  .addCell("ExpenseCategory", "Bills")
-                  .addCell("ExpenseSubCategory", "Electricity")
-                  .addCell("Expense", "100.00"),
-              GRow.newRow(3)
+                  .addCell("ExpenseCategory", "Subscriptions")
+                  .addCell("ExpenseSubCategory", "bbdaily")
+                  .addCell("Expense", "114.00"),
+              GRow.newRow(16)
+                  .addCell("RecordedTimestamp", "17/01/2022")
                   .addCell("Month", "Jan")
                   .addCell("Type", "Debit")
-                  .addCell("RecordedTimestamp", "01/01/2022")
-                  .addCell("ExpenseCategory", "Bills")
-                  .addCell("ExpenseSubCategory", "IdeaPostpaid")
-                  .addCell("Expense", "101.00"),
-              GRow.newRow(4)
+                  .addCell("ExpenseCategory", "Subscriptions")
+                  .addCell("ExpenseSubCategory", "SonyLiv")
+                  .addCell("Expense", "127.00"),
+              GRow.newRow(18)
+                  .addCell("RecordedTimestamp", "17/01/2022")
                   .addCell("Month", "Jan")
                   .addCell("Type", "Debit")
-                  .addCell("RecordedTimestamp", "01/01/2022")
-                  .addCell("ExpenseCategory", "Bills")
-                  .addCell("ExpenseSubCategory", "Internet")
-                  .addCell("Expense", "102.00"),
+                  .addCell("ExpenseCategory", "Subscriptions")
+                  .addCell("ExpenseSubCategory", "Amazon")
+                  .addCell("Expense", "125.00"),
+              GRow.newRow(21)
+                  .addCell("RecordedTimestamp", "17/01/2022")
+                  .addCell("Month", "Jan")
+                  .addCell("Type", "Debit")
+                  .addCell("ExpenseCategory", "Subscriptions")
+                  .addCell("ExpenseSubCategory", "Blah!")
+                  .addCell("Expense", "128.50")));
 
-              GRow.newRow(101)
-                  .addCell("Month", "Mar")
-                  .addCell("Type", "Debit")
-                  .addCell("RecordedTimestamp", "01/03/2022")
-                  .addCell("ExpenseCategory", "Bills")
-                  .addCell("ExpenseSubCategory", "Internet")
-                  .addCell("Expense", "219.00"),
-              GRow.newRow(102)
-                  .addCell("Month", "Mar")
-                  .addCell("Type", "Debit")
-                  .addCell("RecordedTimestamp", "01/03/2022")
-                  .addCell("ExpenseCategory", "Bills")
-                  .addCell("ExpenseSubCategory", "IdeaPostpaid")
-                  .addCell("Expense", "220.00")));
-
-  List<GRow> expResFilterRowNoConditionsMatch = new LinkedList<>(); //no records match
+  List<GRow> expResFilterRowNoConditionsMatch = new LinkedList<>(); // no records match
 }
