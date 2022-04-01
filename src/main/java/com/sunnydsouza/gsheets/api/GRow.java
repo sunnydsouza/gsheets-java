@@ -38,6 +38,10 @@ public class GRow {
     this.colNum = colNum; // start of a new row. default colNum is 0
   }
 
+  public static GRow newRow() {
+    return new GRow();
+  }
+
   public static GRow newRow(int rowNum) {
     return new GRow(rowNum);
   }
@@ -142,7 +146,7 @@ public class GRow {
   }
 
   public List<Object> toListObject() {
-    return rowColValMap.entrySet().stream().map(Map.Entry::getValue).collect(Collectors.toList());
+    return rowColValMap.values().stream().collect(Collectors.toList());
   }
   /**
    * Compare the current row with the expected row
@@ -217,7 +221,7 @@ public class GRow {
   }
 
   public GRow updateCell(Map<String, String> updateMap) {
-    updateMap.entrySet().stream().forEach(e -> updateCell(e.getKey(), e.getValue()));
+    updateMap.entrySet().forEach(e -> updateCell(e.getKey(), e.getValue()));
     return this;
   }
 
@@ -229,38 +233,3 @@ public class GRow {
   }
 }
 
-@Getter
-@Setter
-class GSheetRange {
-  private String sheetName;
-  private Integer rangeStartRow;
-  private Integer rangeEndRow;
-  private String rangeStart;
-  private String rangeEnd;
-
-  public GSheetRange(
-      String sheetName,
-      String rangeStart,
-      Integer rangeStartRow,
-      String rangeEnd,
-      Integer rangeEndRow) {
-    this.sheetName = sheetName;
-    this.rangeStartRow = rangeStartRow;
-    this.rangeEndRow = rangeEndRow;
-    this.rangeStart = rangeStart;
-    this.rangeEnd = rangeEnd;
-  }
-
-  @Override
-  public String toString() {
-    StringBuilder sb = new StringBuilder();
-    sb.append(sheetName).append("!").append(rangeStart);
-    if (rangeStartRow != null)
-      sb.append(rangeStartRow); // rowNnumber is optional,so if not present, dont append
-    sb.append(":");
-    sb.append(rangeEnd);
-    if (rangeEndRow != null)
-      sb.append(rangeEndRow); // rowNnumber is optional,so if not present, dont append
-    return sb.toString();
-  }
-}

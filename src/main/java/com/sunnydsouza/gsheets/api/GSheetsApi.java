@@ -18,6 +18,8 @@ import java.io.InputStream;
 import java.security.GeneralSecurityException;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
@@ -28,7 +30,7 @@ import java.util.stream.IntStream;
  *
  * @author sunnydsouza
  */
-public class GsheetsApi {
+public class GSheetsApi {
   private static final String APPLICATION_NAME = "Simple Gsheets API wrapper by sunnydsouza";
   private static final JsonFactory JSON_FACTORY = JacksonFactory.getDefaultInstance();
   private static final String TOKENS_DIRECTORY_PATH = "tokens";
@@ -40,11 +42,11 @@ public class GsheetsApi {
 
   private static final String CREDENTIALS_FILE_PATH =
       System.getProperty("user.dir") + "/credentials/credentials.json";
-  final Logger logger = LoggerFactory.getLogger(GsheetsApi.class);
+  final Logger logger = LoggerFactory.getLogger(GSheetsApi.class);
   Sheets service;
   String spreadsheetId;
 
-  private GsheetsApi(String gsheetsId) throws GeneralSecurityException, IOException {
+  private GSheetsApi(String gsheetsId) throws GeneralSecurityException, IOException {
     this.spreadsheetId = gsheetsId;
     final NetHttpTransport HTTP_TRANSPORT = GoogleNetHttpTransport.newTrustedTransport();
     GoogleCredentials googleCredentials;
@@ -58,55 +60,10 @@ public class GsheetsApi {
             .build();
   }
 
-  /**
-   * Creates an authorized Credential object.
-   *
-   * @param HTTP_TRANSPORT The network HTTP Transport.
-   * @return An authorized Credential object.
-   * @throws IOException If the credentials.json file cannot be found.
-   */
-  /*  private static Credential getCredentials(final NetHttpTransport HTTP_TRANSPORT)
-      throws IOException {
-    // Load client secrets.
-    // InputStream in = GsheetsApi.class.getResourceAsStream(CREDENTIALS_FILE_PATH);
-    InputStream in = new FileInputStream(CREDENTIALS_FILE_PATH);
-    GoogleClientSecrets clientSecrets =
-        GoogleClientSecrets.load(JSON_FACTORY, new InputStreamReader(in));
-
-    // Build flow and trigger user authorization request.
-    GoogleAuthorizationCodeFlow flow =
-        new GoogleAuthorizationCodeFlow.Builder(HTTP_TRANSPORT, JSON_FACTORY, clientSecrets, SCOPES)
-            .setDataStoreFactory(new FileDataStoreFactory(new java.io.File(TOKENS_DIRECTORY_PATH)))
-            .setAccessType("offline")
-            .build();
-    LocalServerReceiver receiver = new LocalServerReceiver.Builder().setPort(8888).build();
-    return new AuthorizationCodeInstalledApp(flow, receiver).authorize("user");
-  }*/
-
-  /**
-   * Build and return an authorized Sheets API client service.
-   *
-   * @return
-   * @throws IOException
-   */
-  /*  private static Credential getServiceAccountCredentials(final NetHttpTransport HTTP_TRANSPORT)
-            throws IOException {
-
-
-  // Initializing the service:
-
-      GoogleCredentials googleCredentials;
-      try(InputStream credentialsStream = new FileInputStream(CREDENTIALS_FILE_PATH)) {
-        googleCredentials = GoogleCredentials.fromStream(credentialsStream).createScoped(SCOPES);
-      }
-      service = new Sheets.Builder(HTTP_TRANSPORT, JSON_FACTORY, new HttpCredentialsAdapter(googleCredentials))
-              .setApplicationName(APPLICATION_NAME)
-              .build();
-    }*/
-  public static GsheetsApi spreadsheet(String gsheetsId)
+  public static GSheetsApi spreadsheet(String gsheetsId)
       throws GeneralSecurityException, IOException {
 
-    return new GsheetsApi(gsheetsId);
+    return new GSheetsApi(gsheetsId);
   }
 
   /**
@@ -127,25 +84,6 @@ public class GsheetsApi {
     }
   }
 
-  /**
-   * Reads the values of a sheet in a Google sheet and return as List<Map<String, String>>
-   *
-   * @param sheetRange The sheet range
-   * @return list of result rows
-   * @throws IOException
-   */
-  /*  private List<Map<String, String>> readSheetValuesAsListMap(String sheetRange) throws IOException {
-    List<List<Object>> sheetValues = readSheetValuesRaw(sheetRange);
-    List<Object> tableHeader = getTableHeaders(sheetValues);
-    List<List<Object>> tableData = getTableData(sheetValues);
-
-    List<Map<String, String>> tableDataMap =
-        tableData.stream()
-            .map(l -> transformToColValMap(tableHeader, l))
-            .collect(Collectors.toCollection(LinkedList::new));
-
-    return tableDataMap;
-  }*/
 
   public List<GRow> readSheetValues(String sheetRange, boolean header) throws IOException {
     List<List<Object>> sheetValues = readSheetValuesRaw(sheetRange);
@@ -175,21 +113,11 @@ public class GsheetsApi {
     return readSheetValues(sheetRange, true);
   }
 
-  /*  public List<GRow> readSheetValuesWithoutHeaders(String sheetRange) throws IOException {
-    List<List<Object>> sheetValues = readSheetValuesRaw(sheetRange);
 
-    AtomicInteger rowIndex = new AtomicInteger(1);
-    List<GRow> gRows =
-        sheetValues.stream()
-            .map(m -> GRow.newRow(rowIndex.getAndIncrement(), m))
-            .collect(Collectors.toCollection(LinkedList::new));
-
-    return gRows;
-  }*/
 
   /**
    * Helper method to create a map of column name and value using the table header and data. Used in
-   * {@link GsheetsApi#readSheetValues(String)}
+   * {@link GSheetsApi#readSheetValues(String)}
    *
    * @param tableHeader
    * @param row
@@ -204,29 +132,6 @@ public class GsheetsApi {
     }
     return colMap;
   }
-
-  /**
-   * Appends rows to a Google sheet AFTER a given sheet range
-   *
-   * @param range The range of the sheet
-   * @param rowValues The rows to be appended in form of List<Object>
-   * @return updated row count
-   * @throws IOException
-   */
-  /*  public void appendRow(String range, List<Object> row) throws IOException {
-
-    List<List<Object>> values = Arrays.asList(row);
-
-    ValueRange body = new ValueRange().setValues(values);
-    AppendValuesResponse result =
-        service
-            .spreadsheets()
-            .values()
-            .append(spreadsheetId, range, body)
-            .setValueInputOption("USER_ENTERED")
-            .execute();
-    logger.info("{} cells appended.", result.getUpdates().getUpdatedCells());
-  }*/
 
   public void appendRows(String range, List<GRow> rows) throws IOException {
     List<List<Object>> values = new LinkedList<>();
@@ -243,32 +148,66 @@ public class GsheetsApi {
     logger.info("{} cells appended.", result.getUpdates().getUpdatedCells());
   }
 
-  public void insertRows(int sheetId, String sheetRange, List<GRow> rows) throws IOException {
-    //    List<List<Object>> values = new LinkedList<>();
-    //    rows.forEach(r -> values.add(r.toListObject()));
-    //    ValueRange body = new ValueRange().setMajorDimension("ROWS").setValues(values);
+  public void insertRowsBefore(int sheetId, String sheetRange, List<GRow> rows) throws IOException {
 
-    // Create an InsertDimensionRequest object.
+    GSheetRange gSheetRange = inferRange(sheetRange);
 
-    for (int i = rows.size() - 1; i >= 0; i--) {
-      insertEmptyRowBelow(sheetId, rows.get(i).getRowNo());
+    insertEmptyRow(
+        sheetId,
+        gSheetRange.getRangeStartRow() - 1,
+        gSheetRange.getRangeStartRow() - 1 + rows.size());
 
-      List<List<Object>> values = new LinkedList<>();
-      values.add(rows.get(i).toListObject());
+    GSheetRange insertRange =
+        new GSheetRange(
+            gSheetRange.getSheetName(),
+            gSheetRange.getRangeStart(),
+            gSheetRange.getRangeStartRow(),
+            gSheetRange.getRangeEnd(),
+            gSheetRange.getRangeEndRow() + rows.size() - 1);
+    List<List<Object>> values = new LinkedList<>();
+    rows.forEach(r -> values.add(r.toListObject()));
 
-      ValueRange body = new ValueRange().setMajorDimension("ROWS").setValues(values);
-      UpdateValuesResponse result =
-          service
-              .spreadsheets()
-              .values()
-              .update(spreadsheetId, rows.get(i).getRowRange(sheetRange), body)
-              .setValueInputOption("USER_ENTERED")
-              .execute();
-      logger.info("{} cells appended.", result.getUpdatedCells());
-    }
+    ValueRange body = new ValueRange().setMajorDimension("ROWS").setValues(values);
+    UpdateValuesResponse result =
+        service
+            .spreadsheets()
+            .values()
+            .update(spreadsheetId, insertRange.toString(), body)
+            .setValueInputOption("USER_ENTERED")
+            .execute();
+    logger.info("{} cells appended.", result.getUpdatedCells());
   }
 
-  public void insertEmptyRowBelow(int sheetId, int rowNo) throws IOException {
+  public void insertRowsAfter(int sheetId, String sheetRange, List<GRow> rows) throws IOException {
+    GSheetRange gSheetRange = inferRange(sheetRange);
+
+    insertEmptyRow(
+        sheetId, gSheetRange.getRangeStartRow(), gSheetRange.getRangeStartRow() + rows.size());
+
+    GSheetRange insertRange =
+        new GSheetRange(
+            gSheetRange.getSheetName(),
+            gSheetRange.getRangeStart(),
+            gSheetRange.getRangeStartRow() + 1,
+            gSheetRange.getRangeEnd(),
+            gSheetRange.getRangeEndRow() + rows.size());
+    List<List<Object>> values = new LinkedList<>();
+    rows.forEach(r -> values.add(r.toListObject()));
+
+    ValueRange body = new ValueRange().setMajorDimension("ROWS").setValues(values);
+    UpdateValuesResponse result =
+        service
+            .spreadsheets()
+            .values()
+            .update(spreadsheetId, insertRange.toString(), body)
+            .setValueInputOption("USER_ENTERED")
+            .execute();
+    logger.info("{} cells appended.", result.getUpdatedCells());
+
+
+  }
+
+  public void insertEmptyRow(int sheetId, int startRowIndex, int endRowIndex) throws IOException {
     BatchUpdateSpreadsheetRequest requestBody = new BatchUpdateSpreadsheetRequest();
 
     List<Request> requests = new ArrayList<>();
@@ -279,11 +218,10 @@ public class GsheetsApi {
                 new DimensionRange()
                     .setSheetId(sheetId)
                     .setDimension("ROWS")
-                    .setStartIndex(rowNo - 1)
-                    .setEndIndex(rowNo)));
+                    .setStartIndex(startRowIndex)
+                    .setEndIndex(endRowIndex)));
 
     // Update row request
-
     requests.add(request);
     requestBody.setRequests(requests);
 
@@ -293,39 +231,6 @@ public class GsheetsApi {
     BatchUpdateSpreadsheetResponse insertResponse = insertRequest.execute();
   }
 
-  /**
-   * Deletes a row in a Google sheet based on start and end row index
-   *
-   * @param spreadsheetId The spreadsheet id
-   * @param sheetId The sheet id in the spreadsheet
-   * @param startIndex The start row index
-   * @param endIndex The end row index
-   */
-  /*private void deleteRow(String spreadsheetId, int sheetId, int startIndex, int endIndex) {
-
-    BatchUpdateSpreadsheetRequest content = new BatchUpdateSpreadsheetRequest();
-
-    DeleteDimensionRequest request =
-        new DeleteDimensionRequest()
-            .setRange(
-                new DimensionRange()
-                    .setSheetId(sheetId) // Sheet ID
-                    .setDimension("ROWS")
-                    .setStartIndex(startIndex)
-                    .setEndIndex(endIndex));
-
-    List<Request> requests = new ArrayList<>();
-    requests.add(new Request().setDeleteDimension(request));
-    content.setRequests(requests);
-    System.out.println(content.getRequests());
-
-    try {
-      service.spreadsheets().batchUpdate(spreadsheetId, content).execute();
-    } catch (IOException e) {
-      e.printStackTrace();
-      logger.error("Error in deleting row");
-    }
-  }*/
 
   public void deleteRows(int sheetId, List<Integer> rowsToBeDeleted) throws IOException {
 
@@ -454,5 +359,33 @@ public class GsheetsApi {
 
   private List<Object> getTableHeaders(List<List<Object>> sheetValues) {
     return sheetValues.get(0);
+  }
+
+  GSheetRange inferRange(String range) {
+    // Get the sheetName, rangeStart, rangeEnd, rageStartRow, rangeEndRow from range
+    try {
+      GSheetRange gSheetRange = null;
+      Pattern pattern =
+          Pattern.compile(
+              "(?<sheetName>[A-Za-z0-9 _!]*)!(?<rangeStart>[A-Z]*)(?<rangeStartRow>[0-9]*):(?<rangeEnd>[A-Z]*)(?<rangeEndRow>[0-9]*)");
+      Matcher matcher = pattern.matcher(range);
+      if (matcher.find()) {
+        gSheetRange =
+            new GSheetRange(
+                matcher.group("sheetName"),
+                matcher.group("rangeStart"),
+                matcher.group("rangeStartRow").equals("")
+                    ? null
+                    : Integer.parseInt(matcher.group("rangeStartRow")),
+                matcher.group("rangeEnd"),
+                matcher.group("rangeEndRow").equals("")
+                    ? null
+                    : Integer.parseInt(matcher.group("rangeEndRow")));
+      }
+      return gSheetRange;
+    } catch (Exception e) {
+      logger.error("Error while inferring range from {}", range);
+      throw new RuntimeException(e);
+    }
   }
 }
