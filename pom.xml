@@ -42,8 +42,8 @@
         <!-- Central Repository -->
         <snapshotRepository>
             <id>ossrh</id>
-            <!--            <url>https://oss.sonatype.org/content/repositories/snapshots</url> &lt;!&ndash; Old Url (pre 2021) &ndash;&gt;-->
-            <url>https://s01.oss.sonatype.org/content/repositories/snapshots</url>
+            <url>https://oss.sonatype.org/content/repositories/snapshots</url> <!-- Old Url (pre 2021) For com.sunnydsouza -->
+<!--            <url>https://s01.oss.sonatype.org/content/repositories/snapshots</url>--> <!-- New Url (post 2021) For io.github.sunnydsouza -->
         </snapshotRepository>
     </distributionManagement>
     <developers>
