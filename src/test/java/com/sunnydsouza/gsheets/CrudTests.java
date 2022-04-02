@@ -1,7 +1,8 @@
-package com.sunnydsouza.gsheets; /*
-                                  * @created 01/04/2022 - 6:21 AM
-                                  * @author sunnydsouza
-                                  */
+package com.sunnydsouza.gsheets;
+/* Tests to verify the insert,update,append,delete operations on google sheet ranges
+ * @created 01/04/2022 - 6:21 AM
+ * @author sunnydsouza
+ */
 
 import com.sunnydsouza.gsheets.api.GColumnFilters;
 import com.sunnydsouza.gsheets.api.GCondition;

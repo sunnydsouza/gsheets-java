@@ -122,6 +122,12 @@
                 <plugin>
                     <artifactId>maven-surefire-plugin</artifactId>
                     <version>2.22.2</version>
+                    <configuration>
+                        <systemPropertyVariables>
+                            <GSHEETS_ID>${env.GSHEETS_ID}</GSHEETS_ID>
+                            <CRUD_SHEET_ID>${env.CRUD_SHEET_ID}</CRUD_SHEET_ID>
+                        </systemPropertyVariables>
+                    </configuration>
                 </plugin>
                 <plugin>
                     <artifactId>maven-failsafe-plugin</artifactId>

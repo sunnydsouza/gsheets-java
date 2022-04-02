@@ -63,4 +63,8 @@ public class PropertyFileReader {
       throw new RuntimeException(e);
     }
   }
+
+  public static void setPropValues(String propertyKey,String propertyValue) {
+    propMap.put(propertyKey,propertyValue);
+  }
 }

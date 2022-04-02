@@ -13,7 +13,8 @@ import java.util.Map;
 import java.util.function.Predicate;
 
 /**
- * A filter condition for a column in the google sheet range (with headers)
+ * A class to create/apply filter conditions on column/s in the google sheet range (with headers)
+ * Please note that the range MUST HAVE headers to be able to create/apply filters
  *
  * @author sunnydsouza
  */
@@ -37,18 +38,15 @@ public class GColumnFilters {
     logger.debug("All current GColumnFilters: {}", predicateMap);
     return predicateMap;
   }
-/*  public Predicate<? super Map<String, String>> apply() {
+  /*  public Predicate<? super Map<String, String>> apply() {
     return r ->
         (r.entrySet().stream()
             .allMatch(m -> predicateMap.getOrDefault(m.getKey(), n -> true).test(m.getValue())));
   }*/
 
-
   public Predicate<? super GRow> apply() {
     return r ->
-            (r.getColValMap().entrySet().stream()
-                    .allMatch(m -> predicateMap.getOrDefault(m.getKey(), n -> true).test(m.getValue())));
+        (r.getColValMap().entrySet().stream()
+            .allMatch(m -> predicateMap.getOrDefault(m.getKey(), n -> true).test(m.getValue())));
   }
-
-
 }

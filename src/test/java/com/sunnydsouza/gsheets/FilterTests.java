@@ -1,5 +1,6 @@
 package com.sunnydsouza.gsheets;
 /*
+ * Tests to verify the functionality of the Filter class.
  * @created 21/03/2022 - 4:15 PM
  * @author sunnydsouza
  */

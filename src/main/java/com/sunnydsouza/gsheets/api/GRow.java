@@ -1,12 +1,11 @@
 package com.sunnydsouza.gsheets.api;
 /*
+ * Class to represent a row in a Google Sheet
  * @created 30/03/2022 - 2:40 PM
  * @author sunnydsouza
  */
 
 import com.google.api.services.sheets.v4.model.ValueRange;
-import lombok.Getter;
-import lombok.Setter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -16,13 +15,11 @@ import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 public class GRow {
-  private String sheetName; // the range to which this sheet belongs
-  private String parentRangeStart; // the range to which this sheet belongs
-  private String parentRangeEnd; // the range to which this sheet belongs
+  Logger logger = LoggerFactory.getLogger(GRow.class);
   private int rowNum;
   private int colNum;
-  private Map<String, String> rowColValMap = new LinkedHashMap<>();
-  Logger logger = LoggerFactory.getLogger(GRow.class);
+  private Map<String, String> rowColValMap =
+      new LinkedHashMap<>(); // holds the column name and value
 
   private GRow() {
     this.colNum = 0; // start of a new row. default colNum is 0
@@ -38,14 +35,17 @@ public class GRow {
     this.colNum = colNum; // start of a new row. default colNum is 0
   }
 
+  // Creates a new row
   public static GRow newRow() {
     return new GRow();
   }
 
+  // Create a new row with the rowNum information
   public static GRow newRow(int rowNum) {
     return new GRow(rowNum);
   }
 
+  // Create a new row with the rowNum and colNum information. TODO check if this is needed
   public static GRow newRow(int rowNum, int colNum) {
     return new GRow(rowNum, colNum);
   }
@@ -54,12 +54,28 @@ public class GRow {
   //    return new GRow();
   //  }
 
+  /**
+   * Helps convert a Lis<Map<String,String> into a GRow when used in stream operations Refer usage
+   * in {@link GSheetsApi#readSheetValues(String, boolean)}
+   *
+   * @param rowNum the row number
+   * @param m the <Map<String,String>
+   * @return
+   */
   public static GRow newRow(int rowNum, Map<String, String> m) {
     GRow gRow = new GRow(rowNum);
     gRow.rowColValMap = m;
     return gRow;
   }
 
+  /**
+   * Helps convert a Lis<Object> into a GRow when used in stream operations Refer usage in {@link
+   * GSheetsApi#readSheetValues(String, boolean)}
+   *
+   * @param rowNum
+   * @param m
+   * @return
+   */
   public static GRow newRow(int rowNum, List<Object> m) {
     GRow gRow = new GRow(rowNum);
     m.stream()
@@ -70,14 +86,27 @@ public class GRow {
     return gRow;
   }
 
+  /**
+   * @return rowNum represeting the current GRow
+   */
   public int getRowNo() {
     return rowNum;
   }
 
+  /**
+   * @return the rowColValMap for the current GRow
+   */
   public Map<String, String> getColValMap() {
     return rowColValMap;
   }
 
+  /**
+   * Adds a new column to the current GRow with the columnName and columnValue
+   *
+   * @param columnName the name of the column
+   * @param columnValue the value of the column
+   * @return a cell to the current GRow
+   */
   public GRow addCell(String columnName, String columnValue) {
     rowColValMap.put(columnName, columnValue);
     return this;
@@ -95,14 +124,14 @@ public class GRow {
     return this;
   }
 
-  public void updateCell(String columnName, String columnValue) {
-    rowColValMap.put(
-        columnName,
-        columnValue); // overwrite the existing column name with new value. Could also be used to
-    // add new column with new value, though not advisable(use addCell for that
-    // purpose)
-  }
-
+  /**
+   * Every GRow with a valid rowNum and parent sheet range should be able to be represented as a
+   * ValueRange object @Example: if the current GRow is 5th row and the parent sheet range is A1:F5,
+   * then the ValueRange object would represent the 5th row of the sheet A5:F5
+   *
+   * @param parentRange requires the parent(encapsulating) range to which this row belongs to
+   * @return a ValueRange object representing the current GRow
+   */
   public ValueRange convertToValueRange(String parentRange) {
 
     GSheetRange pR = inferRange(parentRange);
@@ -117,6 +146,14 @@ public class GRow {
     return valueRange;
   }
 
+  /**
+   * Helper function used to infer a given Google sheet range @Example: an VALID range example would
+   * be "TestSheet!A1:B2" In this case, details of the range such as sheetId, sheetName, sheetRange,
+   * sheetStartRow, sheetEndRow would be encapsulated within a {@link GSheetRange} object
+   *
+   * @param range a valid Google Sheet range
+   * @return a {@link GSheetRange} object
+   */
   GSheetRange inferRange(String range) {
     // Get the sheetName, rangeStart, rangeEnd, rageStartRow, rangeEndRow from range
     try {
@@ -145,9 +182,15 @@ public class GRow {
     }
   }
 
+  /**
+   * Converts the current GRow to a List of Objects (Used when calling the Google Sheets API)
+   *
+   * @return List<List<Object>> rows
+   */
   public List<Object> toListObject() {
     return rowColValMap.values().stream().collect(Collectors.toList());
   }
+
   /**
    * Compare the current row with the expected row
    *
@@ -220,11 +263,34 @@ public class GRow {
         + '}';
   }
 
+  /**
+   * Overwrite the existing column name with new value. Could also be used to add new column with
+   * new value, though not advisable(use {@link GRow#addCell(String, String)} for that purpose)
+   *
+   * @param columnName
+   * @param columnValue
+   */
+  public void updateCell(String columnName, String columnValue) {
+    rowColValMap.put(columnName, columnValue);
+  }
+
+  /**
+   * Overloaded method to update cells with a given map of columnName and values
+   *
+   * @param updateMap
+   * @return
+   */
   public GRow updateCell(Map<String, String> updateMap) {
     updateMap.entrySet().forEach(e -> updateCell(e.getKey(), e.getValue()));
     return this;
   }
 
+  /**
+   * Helper method to add a new cell to the row
+   *
+   * @param sheetRange
+   * @return
+   */
   public String getRowRange(String sheetRange) {
     GSheetRange pR = inferRange(sheetRange);
     return new GSheetRange(
@@ -232,4 +298,3 @@ public class GRow {
         .toString();
   }
 }
-

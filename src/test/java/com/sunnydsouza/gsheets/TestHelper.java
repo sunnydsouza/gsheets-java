@@ -1,7 +1,8 @@
-package com.sunnydsouza.gsheets; /*
-                                  * @created 01/04/2022 - 6:51 AM
-                                  * @author sunnydsouza
-                                  */
+package com.sunnydsouza.gsheets;
+/* Helper class for testing
+ * @created 01/04/2022 - 6:51 AM
+ * @author sunnydsouza
+ */
 
 import com.sunnydsouza.gsheets.api.GColumnFilters;
 import com.sunnydsouza.gsheets.api.GCondition;
@@ -125,6 +126,10 @@ public class TestHelper {
   @BeforeAll
   public static void readConfiguration() {
     PropertyFileReader.readPropertyFiles(PROPERTY_FILE);
+    System.out.println(System.getProperty(GSHEETS_ID));
+    System.out.println(System.getProperty(CRUD_SHEET_ID));
+//    PropertyFileReader.setPropValues(GSHEETS_ID,System.getenv(GSHEETS_ID));
+//    PropertyFileReader.setPropValues(CRUD_SHEET_ID,System.getenv(CRUD_SHEET_ID));
   }
 
   protected void updateRow22And23() throws GeneralSecurityException, IOException {

@@ -40,6 +40,10 @@ public class GSheetsApi {
    */
   private static final List<String> SCOPES = Collections.singletonList(SheetsScopes.SPREADSHEETS);
 
+  // Path to credentials to service account.Please refer
+  // https://cloud.google.com/iam/docs/creating-managing-service-account-keys
+  // Currently user is expected to create a service account credentials.json file and place it in
+  // the /credentials/ folder of project root
   private static final String CREDENTIALS_FILE_PATH =
       System.getProperty("user.dir") + "/credentials/credentials.json";
   final Logger logger = LoggerFactory.getLogger(GSheetsApi.class);
@@ -60,6 +64,14 @@ public class GSheetsApi {
             .build();
   }
 
+  /**
+   * Ctor for GSheetsApi
+   *
+   * @param gsheetsId - the spreadsheet id
+   * @return
+   * @throws GeneralSecurityException
+   * @throws IOException
+   */
   public static GSheetsApi spreadsheet(String gsheetsId)
       throws GeneralSecurityException, IOException {
 
@@ -84,9 +96,16 @@ public class GSheetsApi {
     }
   }
 
-
-  public List<GRow> readSheetValues(String sheetRange, boolean header) throws IOException {
-    List<List<Object>> sheetValues = readSheetValuesRaw(sheetRange);
+  /**
+   * Gets the values of a Google sheet for a given sheet range in the form of List<GRow> records
+   *
+   * @param range The range of the sheet
+   * @param header - if true, first row is assumed to be header
+   * @return result rows in form of list of {@link GRow} records
+   * @throws IOException
+   */
+  public List<GRow> readSheetValues(String range, boolean header) throws IOException {
+    List<List<Object>> sheetValues = readSheetValuesRaw(range);
     List<Object> tableHeader = getTableHeaders(sheetValues);
     List<List<Object>> tableData = getTableData(sheetValues);
     List<GRow> gRows = null;
@@ -108,12 +127,17 @@ public class GSheetsApi {
     return gRows;
   }
 
-  public List<GRow> readSheetValues(String sheetRange) throws IOException {
-
-    return readSheetValues(sheetRange, true);
+  /**
+   * Gets the values of a Google sheet for a given sheet range in the form of List<GRow> records
+   * (assumes first row is header)
+   *
+   * @param range
+   * @return
+   * @throws IOException
+   */
+  public List<GRow> readSheetValues(String range) throws IOException {
+    return readSheetValues(range, true);
   }
-
-
 
   /**
    * Helper method to create a map of column name and value using the table header and data. Used in
@@ -133,6 +157,13 @@ public class GSheetsApi {
     return colMap;
   }
 
+  /**
+   * Append rows to a google sheet range
+   *
+   * @param range the range to append to
+   * @param rows the rows to append
+   * @throws IOException
+   */
   public void appendRows(String range, List<GRow> rows) throws IOException {
     List<List<Object>> values = new LinkedList<>();
     rows.forEach(r -> values.add(r.toListObject()));
@@ -148,15 +179,27 @@ public class GSheetsApi {
     logger.info("{} cells appended.", result.getUpdates().getUpdatedCells());
   }
 
-  public void insertRowsBefore(int sheetId, String sheetRange, List<GRow> rows) throws IOException {
+  /**
+   * Insert rows before a given row range ex: if the range is given as "A2:C2", then the rows will
+   * be inserted BEFORE row 2
+   *
+   * @param sheetId he sheetId in the spreadsheet. The sheetId can be found in the url of the sheet
+   *     eg: https://docs.google.com/spreadsheets/d/XXXX/edit#gid=YYYY. Then YYYY is the sheetId
+   * @param range the range (row) used as reference for inserting the rows
+   * @param rows the rows to insert
+   * @throws IOException if there is an error
+   */
+  public void insertRowsBefore(int sheetId, String range, List<GRow> rows) throws IOException {
 
-    GSheetRange gSheetRange = inferRange(sheetRange);
+    GSheetRange gSheetRange = inferRange(range);
 
+    // Create empty rows before the range so the rows can be inserted
     insertEmptyRow(
         sheetId,
         gSheetRange.getRangeStartRow() - 1,
         gSheetRange.getRangeStartRow() - 1 + rows.size());
 
+    // Prepare the range for the rows to be inserted
     GSheetRange insertRange =
         new GSheetRange(
             gSheetRange.getSheetName(),
@@ -164,6 +207,8 @@ public class GSheetsApi {
             gSheetRange.getRangeStartRow(),
             gSheetRange.getRangeEnd(),
             gSheetRange.getRangeEndRow() + rows.size() - 1);
+
+    // insert the rows at given range
     List<List<Object>> values = new LinkedList<>();
     rows.forEach(r -> values.add(r.toListObject()));
 
@@ -178,12 +223,24 @@ public class GSheetsApi {
     logger.info("{} cells appended.", result.getUpdatedCells());
   }
 
-  public void insertRowsAfter(int sheetId, String sheetRange, List<GRow> rows) throws IOException {
-    GSheetRange gSheetRange = inferRange(sheetRange);
+  /**
+   * Insert rows after a given row range ex: if the range is given as "A2:C2", then the rows will be
+   * inserted AFTER row 2
+   *
+   * @param sheetId the sheetId in the spreadsheet. The sheetId can be found in the url of the sheet
+   *     eg: https://docs.google.com/spreadsheets/d/XXXX/edit#gid=YYYY. Then YYYY is the sheetId
+   * @param range the range (row) used as reference for inserting the rows
+   * @param rows the rows to insert
+   * @throws IOException if the sheetId is not found
+   */
+  public void insertRowsAfter(int sheetId, String range, List<GRow> rows) throws IOException {
+    GSheetRange gSheetRange = inferRange(range);
 
+    // Create empty rows before the range so the rows can be inserted
     insertEmptyRow(
         sheetId, gSheetRange.getRangeStartRow(), gSheetRange.getRangeStartRow() + rows.size());
 
+    // Prepare the range for the rows to be inserted
     GSheetRange insertRange =
         new GSheetRange(
             gSheetRange.getSheetName(),
@@ -191,6 +248,8 @@ public class GSheetsApi {
             gSheetRange.getRangeStartRow() + 1,
             gSheetRange.getRangeEnd(),
             gSheetRange.getRangeEndRow() + rows.size());
+
+    // insert the rows at given range
     List<List<Object>> values = new LinkedList<>();
     rows.forEach(r -> values.add(r.toListObject()));
 
@@ -203,10 +262,17 @@ public class GSheetsApi {
             .setValueInputOption("USER_ENTERED")
             .execute();
     logger.info("{} cells appended.", result.getUpdatedCells());
-
-
   }
 
+  /**
+   * Helper function to insert empty rows in the spreadsheet
+   *
+   * @param sheetId the sheetId in the spreadsheet. The sheetId can be found in the url of the sheet
+   *     eg: https://docs.google.com/spreadsheets/d/XXXX/edit#gid=YYYY. Then YYYY is the sheetId
+   * @param startRowIndex the start row index
+   * @param endRowIndex the end row index
+   * @throws IOException if the request fails
+   */
   public void insertEmptyRow(int sheetId, int startRowIndex, int endRowIndex) throws IOException {
     BatchUpdateSpreadsheetRequest requestBody = new BatchUpdateSpreadsheetRequest();
 
@@ -229,9 +295,17 @@ public class GSheetsApi {
         service.spreadsheets().batchUpdate(spreadsheetId, requestBody);
 
     BatchUpdateSpreadsheetResponse insertResponse = insertRequest.execute();
+    logger.info("{} rows inserted.", insertResponse.getReplies().size());
   }
 
-
+  /**
+   * Delete rows in the spreadsheet
+   *
+   * @param sheetId the sheetId in the spreadsheet. The sheetId can be found in the url of the sheet
+   *     eg: https://docs.google.com/spreadsheets/d/XXXX/edit#gid=YYYY. Then YYYY is the sheetId
+   * @param rowsToBeDeleted the rows to be deleted
+   * @throws IOException
+   */
   public void deleteRows(int sheetId, List<Integer> rowsToBeDeleted) throws IOException {
 
     List<Request> requests = new ArrayList<>();
@@ -259,23 +333,22 @@ public class GSheetsApi {
 
       BatchUpdateSpreadsheetResponse deleteResponse = deleteRequest.execute();
 
-      System.out.println(deleteResponse);
+      logger.info("{} rows deleted.", deleteResponse.getReplies().size());
     }
   }
 
   /**
-   * Helps find rows matching a set of Predicate conditions Assumes that the first row of sheetRange
-   * is a header row
+   * Helps find rows matching a set of Predicate conditions Assumes that the first row of range is a
+   * header row
    *
-   * @param sheetRange
+   * @param range
    * @param conditions
    * @throws IOException
    * @return
    */
   @Deprecated
-  public List<Integer> findRows(String sheetRange, GColumnFilters conditions) throws IOException {
-    //    List<Map<String, String>> tableDataMap = readSheetValuesAsListMap(sheetRange);
-    List<GRow> tableRows = readSheetValues(sheetRange);
+  public List<Integer> findRows(String range, GColumnFilters conditions) throws IOException {
+    List<GRow> tableRows = readSheetValues(range);
     List<Integer> filteredRowNos =
         IntStream.range(0, tableRows.size())
             .filter(i -> (conditions.apply().test(tableRows.get(i))))
@@ -286,29 +359,35 @@ public class GSheetsApi {
     return filteredRowNos;
   }
 
-  public List<GRow> filterRows(String sheetRange, GColumnFilters conditions) throws IOException {
-
-    return readSheetValues(sheetRange).stream()
+  /**
+   * Helps find rows matching a set of Predicate conditions Assumes that the first row of range is a
+   * header row
+   *
+   * @param range the range of the sheet
+   * @param conditions the conditions to be applied {@see GColumnFilters}
+   * @return the list of {@link GRow}
+   * @throws IOException
+   */
+  public List<GRow> filterRows(String range, GColumnFilters conditions) throws IOException {
+    return readSheetValues(range).stream()
         .filter(conditions.apply())
-        //        .map(m -> GRow.newRow(m))
         .collect(Collectors.toCollection(LinkedList::new));
   }
 
   /**
    * Updates rows in a Google sheet within a given sheet range and those matching filter conditions
    *
-   * @param sheetRange the range of the sheet within which the rows are to be updated
+   * @param range the range of the sheet within which the rows are to be updated
    * @param conditions only rows with matching conditions would be updated
    * @param updateMap a map of column name and values to be updated. Map contains keys with ONLY the
    *     column name which are to be updated
    * @throws IOException
    */
-  public void updateRows(
-      String sheetRange, GColumnFilters conditions, Map<String, String> updateMap)
+  public void updateRows(String range, GColumnFilters conditions, Map<String, String> updateMap)
       throws IOException {
 
     List<GRow> updatedRows =
-        readSheetValues(sheetRange).stream()
+        readSheetValues(range).stream()
             .filter(conditions.apply())
             .map(m -> m.updateCell(updateMap))
             .collect(Collectors.toCollection(LinkedList::new));
@@ -317,7 +396,7 @@ public class GSheetsApi {
     // Send to update only if there are rows to update :-)
     if (updatedRows.size() > 0) {
       List<ValueRange> data = new ArrayList<>();
-      updatedRows.stream().forEach(r -> data.add(r.convertToValueRange(sheetRange)));
+      updatedRows.stream().forEach(r -> data.add(r.convertToValueRange(range)));
       logger.debug("After converting to ValueRange: {}", data);
 
       BatchUpdateValuesRequest body =
@@ -336,16 +415,16 @@ public class GSheetsApi {
    *
    * @param sheetId the sheetId in the spreadsheet. The sheetId can be found in the url of the sheet
    *     eg: https://docs.google.com/spreadsheets/d/XXXX/edit#gid=YYYY. Then YYYY is the sheetId
-   * @param sheetRange the range of the sheet within which the rows are to be deleted
+   * @param range the range of the sheet within which the rows are to be deleted
    * @param conditions only rows with matching conditions would be deleted
    * @return
    * @throws IOException
    */
-  public void deleteRows(final int sheetId, String sheetRange, GColumnFilters conditions)
+  public void deleteRows(final int sheetId, String range, GColumnFilters conditions)
       throws IOException {
 
     List<Integer> rowToBeDeleted =
-        readSheetValues(sheetRange).stream()
+        readSheetValues(range).stream()
             .filter(conditions.apply())
             .map(GRow::getRowNo)
             .collect(Collectors.toCollection(LinkedList::new));
@@ -353,14 +432,35 @@ public class GSheetsApi {
     deleteRows(sheetId, rowToBeDeleted);
   }
 
+  /**
+   * Returns the data (minus the header row, if any refern{@link GSheetsApi#readSheetValues(String,boolean)
+   * @param sheetValues the original values list returned from {@link GSheetsApi#readSheetValues(String,boolean) }
+   * @return the data (minus the header row, if any) as List<List<Object>>
+   */
   private List<List<Object>> getTableData(List<List<Object>> sheetValues) {
     return sheetValues.subList(1, sheetValues.size());
   }
 
+  /**
+   * Returns the header row as List<Object>. Only used when header=true in {@link
+   * GSheetsApi#readSheetValues(String,boolean) }
+   *
+   * @param sheetValues the original values list returned from {@link
+   *     GSheetsApi#readSheetValues(String,boolean) }
+   * @return the header row as List<Object>
+   */
   private List<Object> getTableHeaders(List<List<Object>> sheetValues) {
     return sheetValues.get(0);
   }
 
+  /**
+   * Helper function used to infer a given Google sheet range ex: an VALID range example would be
+   * "TestSheet!A1:B2" In this case, details of the range such as sheetId, sheetName, sheetRange,
+   * sheetStartRow, sheetEndRow would be encapsulated within a {@link GSheetRange} object
+   *
+   * @param range a valid Google Sheet range
+   * @return a {@link GSheetRange} object
+   */
   GSheetRange inferRange(String range) {
     // Get the sheetName, rangeStart, rangeEnd, rageStartRow, rangeEndRow from range
     try {
