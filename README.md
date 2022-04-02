@@ -1,6 +1,7 @@
 # gsheets-java
 A simple wrapper aroung Google Sheet Api enabling to perform basic CRUD operations on google sheets data. Also allows for filtering data
 
+
 ### Prerequiste: Creating your Google Service account
 
 In order to use this library, you will need a Google service account which ia authenticated access to your Google Sheet
@@ -9,7 +10,7 @@ Once you create a Google service account, export the credentials.json and place 
 
 Then navigate to the Google Sheet and use the Share option to share the sheet with service account email address
 
-![Untitled](Detailed%20d%207a9fa/Untitled.png)
+![ShareOption](doc/images/image1.png)
 
 These steps done, you are now ready to use the library 🙂
 
@@ -19,9 +20,9 @@ These steps done, you are now ready to use the library 🙂
 - Its not necessary to name the properties file as application.properties, could be any .properties file
 - Include the details of sheet like `spreadsheetId` and `sheetId`'s of the relevant sheets
 
-       For example, if your sheet url is `*`https://docs.google.com/spreadsheets/d/XXXX/edit#gid=YYYY``*
+       For example, if your sheet url is *`https://docs.google.com/spreadsheets/d/XXXX/edit#gid=YYYY`*
 
-```java
+```
 GSHEETS_ID=XXXX
 SAMPLE_SHEET_ID=YYYY
 ```
@@ -42,7 +43,7 @@ Lets assume we have the below table in Google sheet in `SAMPLE_SHEET` tab (just 
 
 ### Reading a spreadsheet range(headers)
 
-```java
+```
 //You can use the PropertyFileReader in the library to get the GSHEETS_ID from properties file
 List<GRow> readValues = GSheetsApi.spreadsheet(PropertyFileReader.getPropValues(GSHEETS_ID))
                                    .readSheetValues("SAMPLE_SHEET!A:F");
@@ -54,7 +55,7 @@ List<GRow> readValues = GSheetsApi.spreadsheet("XXXX")
 
 ### Reading a spreadsheet range(without headers). Set the second argument to `false`
 
-```java
+```
 List<GRow> readValues = GSheetsApi.spreadsheet(PropertyFileReader.getPropValues(GSHEETS_ID))
                                     .readSheetValues("SAMPLE_SHEET!A31:F33", false);
 
@@ -64,7 +65,7 @@ List<GRow> readValues = GSheetsApi.spreadsheet("XXXX")
 
 ### Inserting rows `BEFORE` a range
 
-```java
+```
 //Create sample List of GRow to insert
 List<GRow> rowsToBeInserted =
       new LinkedList<>(
@@ -93,7 +94,7 @@ GSheetsApi.spreadsheet(PropertyFileReader.getPropValues(GSHEETS_ID))
 
 ### Inserting rows `AFTER` a range
 
-```java
+```
 GSheetsApi.spreadsheet(PropertyFileReader.getPropValues(GSHEETS_ID))
         .insertRowsAfter(
             Integer.parseInt(PropertyFileReader.getPropValues(SAMPLE_SHEET_ID)),
@@ -103,7 +104,7 @@ GSheetsApi.spreadsheet(PropertyFileReader.getPropValues(GSHEETS_ID))
 
 ### Appending rows on a range
 
-```java
+```
 //Create sample List of GRow to insert
 List<GRow> rowsToBeAppended =
       new LinkedList<>(
@@ -132,7 +133,8 @@ Its necessary that the range has **headers** in order to have conditions/filters
 
 Supported `String` operations
 
-> greaterThan
+```
+greaterThan
 lessThan
 lessThanOrEquals
 greaterThanOrEquals
@@ -147,24 +149,23 @@ in
 notIn
 isEmpty
 isNotEmpty
->
->
-> endsWith
-> notEndsWith
->
+endsWith
+notEndsWith
+```
 
 Supported `Date` field operations
 
-> datesBetween
+```
+datesBetween
 datesGreaterThan
 datesLessThan
 datesGreaterThanOrEquals
 datesLessThanOrEquals
->
+```
 
 Example usages
 
-```java
+```
 //Filter on single column
 List<GRow> filteredResult =
         GSheetsApi.spreadsheet(PropertyFileReader.getPropValues(GSHEETS_ID))
@@ -183,7 +184,7 @@ filteredResult.forEach(
 
 Example of filtering on multiple column and multiple conditions on a single column
 
-```java
+```
 //Filtering on multiple columns
 List<GRow> filteredResult =
         GSheetsApi.spreadsheet(PropertyFileReader.getPropValues(GSHEETS_ID))
@@ -206,7 +207,7 @@ Since these are predicates, you can chain in as many `.or` or `.and` `GCondition
 
 ### Getting the row numbers for filtered records
 
-```java
+```
 List<GRow> filteredResult rowNos =
         GSheetsApi.spreadsheet(PropertyFileReader.getPropValues(GSHEETS_ID))
             .filterRows(
@@ -229,7 +230,7 @@ List<GRow> filteredResult rowNos =
 
 `"dd/MM/yyyy"` defines the format in which the date is present in the Google sheet range. As seen in the example [above](https://www.notion.so/Detailed-documentation-on-GSheets-Java-4e643950b8c94996827a09ffa0df53d7)
 
-```java
+```
 
 List<Integer> rowNos =
         GSheetsApi.spreadsheet(PropertyFileReader.getPropValues(GSHEETS_ID))
@@ -256,7 +257,7 @@ List<Integer> rowNos =
 
 ### Deleting rows based on condition
 
-```java
+```
 GSheetsApi.spreadsheet(PropertyFileReader.getPropValues(GSHEETS_ID))
         .deleteRows(
             Integer.parseInt(PropertyFileReader.getPropValues(SAMPLE_SHEET_ID)),
