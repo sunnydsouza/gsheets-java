@@ -194,7 +194,7 @@ public class TestHelper {
     // Verify the updated value in the 2 rows (Row numbers 22,23)
     List<GRow> appendedRow =
         GSheetsApi.spreadsheet(PropertyFileReader.getPropValues(GSHEETS_ID))
-            .readSheetValues("CRUD!A55:F56", false);
+            .readSheetValues("CRUD!A54:F55", false);
     logger.debug("Appended row:{}", appendedRow);
     assertEquals(
         "AppendCat1", appendedRow.get(0).getColValMap().get("4")); // First record and 4th column
