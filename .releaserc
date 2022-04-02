@@ -1,6 +1,6 @@
 {
      "branches": "main",
-     "repositoryUrl": "https://github.com/sunnydsouza/sample-repo-github-actions",
+     "repositoryUrl": "https://github.com/sunnydsouza/gsheets-java",
      "debug": "true",
      "plugins": [
         "@semantic-release/commit-analyzer",
