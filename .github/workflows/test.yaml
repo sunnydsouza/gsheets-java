@@ -32,7 +32,7 @@ jobs:
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        os: [ ubuntu-latest ]
+        os: [ ubuntu-latest, macos-latest, windows-latest ]
         distribution: [ 'temurin' ]
         java: [ '11' ]
     needs:
@@ -58,13 +58,6 @@ jobs:
 
       - name: Test with Maven
         run: mvn clean test
-#      - name: Test Report
-#        uses: dorny/test-reporter@v1
-#        if: success() || failure()
-#        with:
-#          name: Test Results
-#          path: ${{ github.workspace }}/target/surefire-reports/*.xml
-#          reporter: java-junit
       - name: Delete the credential.json
         run: rm ./credentials/credentials.json
       - name: Publish Test Report
