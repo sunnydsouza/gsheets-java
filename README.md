@@ -1,6 +1,8 @@
 # gsheets-java
 A simple wrapper aroung Google Sheet Api enabling to perform basic CRUD operations on google sheets data. Also allows for filtering data
 
+[![Test build on branch](https://github.com/sunnydsouza/gsheets-java/actions/workflows/test.yaml/badge.svg)](https://github.com/sunnydsouza/gsheets-java/actions/workflows/test.yaml)
+
 ### Prerequiste: Creating your Google Service account
 
 In order to use this library, you will need a Google service account which ia authenticated access to your Google Sheet
