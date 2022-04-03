@@ -124,9 +124,9 @@ jobs:
           server-id: github # Value of the distributionManagement/repository/id field of the pom.xml
           settings-path: ${{ github.workspace }} # locat
       - name: Build Package
-        run: mvn -B package -DskipTests --file pom.xml
+        run: mvn -B package -DskipTests --file pom.xml    #Ensure to skip the tests to avoid duplicated runs
       - name: Publish to GitHub Packages Apache Maven
-        run: mvn deploy -DskipTests -s $GITHUB_WORKSPACE/settings.xml
+        run: mvn deploy -DskipTests -s $GITHUB_WORKSPACE/settings.xml #Ensure to skip the tests to avoid duplicated runs
         env:
           GITHUB_TOKEN: ${{ secrets.PERSONAL_GITHUB_TOKEN }}
   maven-publish:
@@ -148,6 +148,7 @@ jobs:
       - name: Publish to Maven Central
         uses: samuelmeuli/action-maven-publish@v1
         with:
+          maven_args: '-DskipTests' # Dont want the tests running again
           gpg_private_key: ${{ env.GPG_PRIVATE_KEY }}
           gpg_passphrase: ${{ env.GPG_PASSPHRASE }}
           nexus_username: ${{ env.OSSRH_USERNAME }}
