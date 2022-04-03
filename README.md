@@ -11,7 +11,7 @@ Once you create a Google service account, export the credentials.json and place 
 
 Then navigate to the Google Sheet and use the Share option to share the sheet with service account email address
 
-![ShareOption](doc/images/image1.png)
+![ShareOption](docs/images/image1.png)
 
 These steps done, you are now ready to use the library 🙂
 
