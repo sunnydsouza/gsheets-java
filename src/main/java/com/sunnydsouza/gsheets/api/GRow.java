@@ -55,11 +55,11 @@ public class GRow {
   //  }
 
   /**
-   * Helps convert a Lis<Map<String,String> into a GRow when used in stream operations Refer usage
+   * Helps convert a List&lt;Map&lt;String,String&gt; into a GRow when used in stream operations Refer usage
    * in {@link GSheetsApi#readSheetValues(String, boolean)}
    *
    * @param rowNum the row number
-   * @param m the <Map<String,String>
+   * @param m the Map&lt;String,String&gt;
    * @return
    */
   public static GRow newRow(int rowNum, Map<String, String> m) {
@@ -69,7 +69,7 @@ public class GRow {
   }
 
   /**
-   * Helps convert a Lis<Object> into a GRow when used in stream operations Refer usage in {@link
+   * Helps convert a List&lt;Object&gt; into a GRow when used in stream operations Refer usage in {@link
    * GSheetsApi#readSheetValues(String, boolean)}
    *
    * @param rowNum
@@ -185,7 +185,7 @@ public class GRow {
   /**
    * Converts the current GRow to a List of Objects (Used when calling the Google Sheets API)
    *
-   * @return List<List<Object>> rows
+   * @return List&lt;List&lt;Object&gt;&gt; rows
    */
   public List<Object> toListObject() {
     return rowColValMap.values().stream().collect(Collectors.toList());

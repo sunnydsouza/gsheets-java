@@ -67,7 +67,7 @@ public class GSheetsApi {
   /**
    * Ctor for GSheetsApi
    *
-   * @param gsheetsId - the spreadsheet id
+   * @param gsheetsId the spreadsheet id
    * @return
    * @throws GeneralSecurityException
    * @throws IOException
@@ -97,7 +97,7 @@ public class GSheetsApi {
   }
 
   /**
-   * Gets the values of a Google sheet for a given sheet range in the form of List<GRow> records
+   * Gets the values of a Google sheet for a given sheet range in the form of List&lt;GRow&gt; records
    *
    * @param range The range of the sheet
    * @param header - if true, first row is assumed to be header
@@ -108,7 +108,7 @@ public class GSheetsApi {
     List<List<Object>> sheetValues = readSheetValuesRaw(range);
     List<Object> tableHeader = getTableHeaders(sheetValues);
     List<List<Object>> tableData = getTableData(sheetValues);
-    List<GRow> gRows = null;
+    List<GRow> gRows;
     if (header) {
       AtomicInteger rowIndex = new AtomicInteger(2); // 1st row is header
 
@@ -128,11 +128,11 @@ public class GSheetsApi {
   }
 
   /**
-   * Gets the values of a Google sheet for a given sheet range in the form of List<GRow> records
+   * Gets the values of a Google sheet for a given sheet range in the form of List&lt;GRow&gt; records
    * (assumes first row is header)
    *
-   * @param range
-   * @return
+   * @param range The range of the sheet
+   * @return result rows in form of list of {@link GRow} records
    * @throws IOException
    */
   public List<GRow> readSheetValues(String range) throws IOException {
@@ -143,9 +143,9 @@ public class GSheetsApi {
    * Helper method to create a map of column name and value using the table header and data. Used in
    * {@link GSheetsApi#readSheetValues(String)}
    *
-   * @param tableHeader
-   * @param row
-   * @return
+   * @param tableHeader the table header
+   * @param row the row data
+   * @return map of column name and value
    */
   private Map<String, String> transformToColValMap(List<Object> tableHeader, List<Object> row) {
     Map<String, String> colMap = new LinkedHashMap<>();
@@ -341,22 +341,20 @@ public class GSheetsApi {
    * Helps find rows matching a set of Predicate conditions Assumes that the first row of range is a
    * header row
    *
-   * @param range
-   * @param conditions
+   * @param range the range to search
+   * @param conditions the conditions to be matched. Refer to {@link GColumnFilters} for more details
    * @throws IOException
    * @return
    */
   @Deprecated
   public List<Integer> findRows(String range, GColumnFilters conditions) throws IOException {
     List<GRow> tableRows = readSheetValues(range);
-    List<Integer> filteredRowNos =
+    return
         IntStream.range(0, tableRows.size())
             .filter(i -> (conditions.apply().test(tableRows.get(i))))
             .mapToObj(
                 i -> i + 2) // +2 because the first row is the header row and index starts from 0
             .collect(Collectors.toCollection(LinkedList::new));
-
-    return filteredRowNos;
   }
 
   /**
@@ -364,7 +362,7 @@ public class GSheetsApi {
    * header row
    *
    * @param range the range of the sheet
-   * @param conditions the conditions to be applied {@see GColumnFilters}
+   * @param conditions the conditions to be applied {@link GColumnFilters}
    * @return the list of {@link GRow}
    * @throws IOException
    */
@@ -396,7 +394,7 @@ public class GSheetsApi {
     // Send to update only if there are rows to update :-)
     if (updatedRows.size() > 0) {
       List<ValueRange> data = new ArrayList<>();
-      updatedRows.stream().forEach(r -> data.add(r.convertToValueRange(range)));
+      updatedRows.forEach(r -> data.add(r.convertToValueRange(range)));
       logger.debug("After converting to ValueRange: {}", data);
 
       BatchUpdateValuesRequest body =
@@ -417,7 +415,6 @@ public class GSheetsApi {
    *     eg: https://docs.google.com/spreadsheets/d/XXXX/edit#gid=YYYY. Then YYYY is the sheetId
    * @param range the range of the sheet within which the rows are to be deleted
    * @param conditions only rows with matching conditions would be deleted
-   * @return
    * @throws IOException
    */
   public void deleteRows(final int sheetId, String range, GColumnFilters conditions)
@@ -435,19 +432,19 @@ public class GSheetsApi {
   /**
    * Returns the data (minus the header row, if any refern{@link GSheetsApi#readSheetValues(String,boolean)
    * @param sheetValues the original values list returned from {@link GSheetsApi#readSheetValues(String,boolean) }
-   * @return the data (minus the header row, if any) as List<List<Object>>
+   * @return the data (minus the header row, if any) as List&lt;List&lt;Object&gt;&gt;
    */
   private List<List<Object>> getTableData(List<List<Object>> sheetValues) {
     return sheetValues.subList(1, sheetValues.size());
   }
 
   /**
-   * Returns the header row as List<Object>. Only used when header=true in {@link
+   * Returns the header row as List&lt;Object&gt;. Only used when header=true in {@link
    * GSheetsApi#readSheetValues(String,boolean) }
    *
    * @param sheetValues the original values list returned from {@link
    *     GSheetsApi#readSheetValues(String,boolean) }
-   * @return the header row as List<Object>
+   * @return the header row as List&lt;Object&gt;
    */
   private List<Object> getTableHeaders(List<List<Object>> sheetValues) {
     return sheetValues.get(0);
